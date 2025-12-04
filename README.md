@@ -1,89 +1,82 @@
-# script_BpG
+# Pipeline de Análise Genómica (IBBC)
 
+Este repositório contém um pipeline automatizado em Bash para o processamento de dados de sequenciação (*Illumina Paired-End* e *Single-End*). O script gere a estrutura de diretórios, realiza o controlo de qualidade, limpeza de leituras e montagem de organelos de forma interativa e reprodutível.
 
-# Pipeline de Análise IBBC (Paired-End & Single-End)
+## Funcionalidades
 
-Este pipeline automatiza o processamento de dados de sequenciação. Ele organiza tudo em pastas, faz o controlo de qualidade, limpa as sequências e tenta fazer a montagem de organelos.
+  * **Estruturação Automática:** Criação de diretórios padronizados (`data`, `results`, `logs`, `scripts`).
+  * **Controlo de Qualidade (QC):** Análise inicial e final com **FastQC**.
+  * **Limpeza e Trimming:** Processamento de leituras com **Fastp** (deteção automática de adaptadores).
+  * **Montagem de Organelos:** Montagem direcionada de plastomas e mitogenomas usando **GetOrganelle**.
+  * **Gestão de Sessão:** Sistema de *logs* detalhados e capacidade de retomar análises interrompidas ("Resume").
 
-## 1. Instalação e Preparação (Só precisas de fazer isto uma vez)
+## Pré-requisitos
 
-Antes de correr o script, tens de ter o ambiente **Conda** pronto. Se ainda não tens nada instalado no computador/servidor, segue estes passos pela ordem:
+Para executar este pipeline, o sistema deve ter um ambiente **Conda** configurado e ativo.
 
-### A. Instalar o Miniconda (se não tiveres)
-Abre o terminal e corre:
+O script pressupõe que as seguintes ferramentas estão instaladas e acessíveis no PATH:
 
-wget [https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh](https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh)
-bash Miniconda3-latest-Linux-x86_64.sh
+  * `fastqc`
+  * `fastp`
+  * `getorganelle`
 
-Aceita a licença e diz "yes" quando ele perguntar se queres inicializar o conda. Importante: Fecha o terminal e abre um novo para as alterações fazerem efeito.
-B. Configurar os canais de Bioinformática
+Além disso, é necessário que as **bases de dados de referência** do GetOrganelle já tenham sido descarregadas (ex: `embplant_pt,embplant_mt`).
 
-Copia e cola isto para configurar onde vamos buscar os programas:
-Bash
+## Instalação
 
-conda config --add channels defaults
-conda config --add channels bioconda
-conda config --add channels conda-forge
-conda config --set channel_priority strict
+Basta clonar este repositório ou copiar o ficheiro `pipeline_ibbc.sh` para o servidor e atribuir permissões de execução:
 
-C. Criar o ambiente e instalar as ferramentas
+```bash
+chmod +x pipeline_ibbc.sh
+```
 
-Vamos criar um ambiente chamado bioinfo com tudo o que precisamos:
-Bash
+## Utilização
 
-conda create -n bioinfo fastqc fastp getorganelles -y
+Recomenda-se vivamente a execução dentro de uma sessão `screen` para evitar interrupções em processos longos (como a montagem de genomas).
 
-D. Baixar a base de dados do GetOrganelles
+### 1\. Preparação
 
-Este passo é crucial, senão a montagem falha. Pode demorar um pouco:
-Bash
+Iniciar a sessão e ativar o ambiente:
 
+```bash
+screen -S analise_ibbc
 conda activate bioinfo
-get_organelles_from_reads.py --download-references embplant_pt,embplant_mt
+```
 
-2. Como usar o Script
+*(Substitua `bioinfo` pelo nome do seu ambiente conda, se for diferente).*
 
-Sempre que quiseres analisar dados, segue estes passos:
+### 2\. Execução
 
-    Ativa o ambiente:
-    Bash
+Correr o script na pasta onde se encontra:
 
-conda activate bioinfo
+```bash
+./pipeline_ibbc.sh
+```
 
-Entra na pasta dos scripts e executa:
-Bash
+### 3\. Fluxo Interativo
 
-    chmod +x pipeline_ibbc.sh   # (Só precisas dar permissão na 1ª vez)
-    ./pipeline_ibbc.sh
+O script guiará o utilizador através das seguintes etapas:
 
-    Segue as instruções no ecrã:
+1.  **Configuração do Projeto:**
+      * **Novo Projeto:** O utilizador indica o nome e o caminho dos ficheiros FASTQ brutos. O script cria a estrutura e importa os dados.
+      * **Retomar Existente:** O utilizador indica o caminho de um projeto já iniciado. O script deteta o progresso e permite continuar sem repetir amostras já processadas.
+2.  **Seleção de Módulos:**
+    É possível escolher correr ou saltar cada etapa individualmente:
+      * FastQC (Dados Brutos)
+      * Fastp (Limpeza)
+      * FastQC (Dados Limpos)
+      * GetOrganelle (Montagem)
 
-        O script vai perguntar se é um Projeto Novo (cria pastas) ou para Retomar (usa pastas existentes).
+## Estrutura de Resultados
 
-        Se for novo, ele pede o caminho dos teus ficheiros FASTQ brutos e copia-os.
+Todos os ficheiros gerados são organizados na pasta `results` dentro do diretório do projeto:
 
-        Podes escolher quais passos queres correr (FastQC, Fastp, etc).
+  * `results/fastqc_raw/`: Relatórios HTML de qualidade antes do processamento.
+  * `results/fastp_clean/`: Ficheiros FASTQ processados e relatórios de filtragem (JSON/HTML).
+  * `results/fastqc_clean/`: Relatórios HTML de validação após a limpeza.
+  * `results/getorganelle/`: Resultados da montagem (Ficheiros FASTA, GFA e logs específicos).
 
-3. O que o Pipeline faz?
+## Logs e Exportação
 
-    Organização: Cria uma pasta Project_ibbc_TeuNome com subpastas para data, results, logs e scripts.
-
-    Detecção: Percebe automaticamente se tens ficheiros Paired-End (R1+R2) ou ficheiros sozinhos e trata-os de forma diferente.
-
-    Resume: Se a análise parar a meio, podes correr de novo e ele não repete o que já está feito.
-
-    Logs: Tudo o que acontece fica gravado na pasta logs.
-
-4. Resultados
-
-No final, vais encontrar tudo na pasta results:
-
-    fastqc_raw/: Relatórios de qualidade dos dados originais.
-
-    fastp_clean/: Os teus ficheiros FASTQ limpos e prontos a usar.
-
-    fastqc_clean/: Relatórios de qualidade depois da limpeza (para confirmares que melhorou).
-
-    getorganelles/: O resultado da montagem (os genomas montados).
-
-No fim, o script pergunta se queres criar um ficheiro .tar.gz com tudo pronto para enviar ou guardar.
+  * **Logs:** Todo o progresso é gravado na pasta `logs/` com data e hora de execução.
+  * **Exportação:** No final, o script oferece a opção de gerar um arquivo `.tar.gz` contendo todos os resultados, scripts e logs (excluindo os dados brutos), pronto para transferência.
