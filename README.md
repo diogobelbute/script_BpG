@@ -37,6 +37,15 @@ chmod +x pipeline_ibbc.sh
 
 É preferível a execução dentro de uma sessão `screen` para evitar interrupções em processos longos (como a montagem de genomas).
 
+Nomes que devem ter os ficheiros fasta *single-end*:
+
+- terminar em '1' + .fasta (extensão utilizada) ou '_1'
+
+Nomes que devem ter os ficheiros fasta *paired-end*:
+
+- Primeiro ficheiro terminar em '1' + .fasta (extensão utilizada) ou '_1'
+- Segundo ficheiro terminar em '2' + .fasta (extensão utilizada) ou '_2'
+
 ### 1\. Preparação
 
 Iniciar a sessão e ativar o ambiente:
