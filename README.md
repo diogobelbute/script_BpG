@@ -1,22 +1,25 @@
 # Pipeline de Análise Genómica (IBBC)
 
-Este repositório contém um pipeline automatizado em Bash para o processamento de dados de sequenciação (*Illumina Paired-End* e *Single-End*). O script gere a estrutura de diretórios, realiza o controlo de qualidade, limpeza de leituras e montagem de organelos de forma interativa e reprodutível.
+Script em Bash para o processamento de dados de sequenciação (*Paired-End* e *Single-End*). O script gere a estrutura de diretórios, realiza o controlo de qualidade, limpeza de leituras e montagem de organelos de forma interativa e reprodutível.
+
+fastqc e multiqc => fastp => getorganelle 
 
 ## Funcionalidades
 
   * **Estruturação Automática:** Criação de diretórios padronizados (`data`, `results`, `logs`, `scripts`).
   * **Controlo de Qualidade (QC):** Análise inicial e final com **FastQC**.
   * **Limpeza e Trimming:** Processamento de leituras com **Fastp** (deteção automática de adaptadores).
-  * **Montagem de Organelos:** Montagem direcionada de plastomas e mitogenomas usando **GetOrganelle**.
+  * **Montagem de Organelos:** Montagem com **GetOrganelle**.
   * **Gestão de Sessão:** Sistema de *logs* detalhados e capacidade de retomar análises interrompidas ("Resume").
 
 ## Pré-requisitos
 
-Para executar este pipeline, o sistema deve ter um ambiente **Conda** configurado e ativo.
+É preciso ter um ambiente **Conda** configurado e ativo.
 
 O script pressupõe que as seguintes ferramentas estão instaladas e acessíveis no PATH:
 
   * `fastqc`
+  * `multiqc`
   * `fastp`
   * `getorganelle`
 
@@ -24,7 +27,7 @@ Além disso, é necessário que as **bases de dados de referência** do GetOrgan
 
 ## Instalação
 
-Basta clonar este repositório ou copiar o ficheiro `pipeline_ibbc.sh` para o servidor e atribuir permissões de execução:
+Basta clonar este repositório ou copiar o ficheiro `script.sh` para o servidor ou computador e atribuir permissões de execução:
 
 ```bash
 chmod +x pipeline_ibbc.sh
@@ -32,7 +35,7 @@ chmod +x pipeline_ibbc.sh
 
 ## Utilização
 
-Recomenda-se vivamente a execução dentro de uma sessão `screen` para evitar interrupções em processos longos (como a montagem de genomas).
+É preferível a execução dentro de uma sessão `screen` para evitar interrupções em processos longos (como a montagem de genomas).
 
 ### 1\. Preparação
 
